@@ -1,10 +1,12 @@
+from json import *
+
 def put_obj(obj, s):
     with open(s + '.txt', 'w') as f:
-        print(obj, file = f)
+        print(dumps(obj), file = f)
 
 def get_obj(s):
     with open(s + '.txt', 'r') as f:
-        return f.read()
+        return loads(f.read())
 
 def lake_registation(id, kol):
     kol = kol + 1
