@@ -58,4 +58,28 @@ def get_words(S):
         t[i] = (str().join(x)).title() #собирает слово из списка и делает так, что первый символ каждого слова - большая буква, остальные маленькие
     return t
 
+def proverka(st, words):
+    list = st.split()
+    if len(list) > len(words):
+        return 0
+    for i in range(len(list)):
+        if list[i] != words[i]:
+            return 0
+    return 1
+
+def find_gemer(id, list_of_lakes):
+    for i in range(len(list_of_lakes)):
+        for j in range(len(list_of_lakes[i])):
+            if id == list_of_lakes[i][j]:
+                return i, j
+    return 0, 0
+
+def print_gamers_on_lake(i, id, list_of_lakes):
+    if len(list_of_lakes) == 0:
+        mess(id, "На озере "+list_of_lakes[0]+" никого нет")
+    else:
+        for j in range(1, len(list_of_lakes[i])):
+            mess(id, "Игрок " + str(list_of_lakes[i][j]))
+        mess(id, "Конец списка")
+
 mess=lambda id, t: vk.method('messages.send', {'user_id':id, 'message':t})
