@@ -17,3 +17,43 @@ def lake_registation(id, kol):
             'purity': 60,   'delata_purity': 0}
     put_obj(lake, s)
     return lake, kol
+
+class gamers_information:
+    id = 0
+    name = ""
+    lake = 0
+    gamer_nomber = 0
+
+class station:
+    money = 10
+    level = 1
+    clean_level = 0
+    grean = 0
+    lobsters = 0
+    yaxts = []
+    parks = []
+    robot = 0
+
+class hod:
+    musor
+    purity
+    level = 0
+    clean_level = 0
+    lobster = 0
+    yaxt = ""
+    park = ""
+    pobot = 0
+    attak = 0
+    diversion_name = 0
+    diversion_money = 0
+    peredacha_name = 0
+    peredacha_money = 0
+    grean = 0
+
+class humans_day:
+    inform = gamers_information()
+    s = station()
+    h = hod()
+    money_minus = 0
+    money_plus = 0
+
