@@ -10,8 +10,8 @@ def get_obj(s):
 
 def lake_registation(id, kol):
     kol = kol + 1
-    s = 'L(' + '5' + ')' + '-day' + '00'
-    lake =  {'name': 'Озеро(' + chr(kol) + ')', 'day': 0,
+    s = 'L(' + str(kol) + ')' + '-day' + '00'
+    lake =  {'name': 'Озеро(' + str(kol) + ')', 'day': 0,
             'kol_gamers': 1, 'gamers': [id],
             'yaxts': [],    'robots': [],
             'purity': 60,   'delata_purity': 0}
