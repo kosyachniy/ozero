@@ -9,19 +9,19 @@ values = {'out':0, 'count':10, 'time_offset':3600}
 
 dict_of_dilogs = {} #словарь списков взаиможействий с людьми "id": ["Способ обращения"(str), "Дата последнего сообщения"(int)]
 list_of_lakes = [] #список списков озёр list_of_lakes[номер озера(int)] == [название озера, id1, id2, id3 ...]
-put_obj(list_of_lakes, 'list_of_lakes') #!!
+#put_obj(list_of_lakes, 'list_of_lakes') #!!
 dict_of_dilogs = get_obj('dict_of_dilogs')
 list_of_lakes = get_obj('list_of_lakes')
 
 
 kol_lakes = len(list_of_lakes)
-for i in range(100):
+for i in range(200):
     res = vk.method('messages.get', values)
     #print(res)
     for item in res['items']:
         id = item['user_id']
         if not(str(id) in dict_of_dilogs): #если с этим человеком мы ещё не разговривали, добавляем его в словарь
-            dict_of_dilogs[str(id)] = ('Человек', item['date'])
+            dict_of_dilogs[str(id)] = ('Человек', item['date'])#!!
             put_obj(dict_of_dilogs, 'dict_of_dilogs')
         elif (dict_of_dilogs[str(id)][1] >= item['date']): #отвечаем только на последние сообщения данного пользователя
             continue
@@ -49,7 +49,7 @@ for i in range(100):
 
         if proverka("Зарегистрировать Новое Озеро", words):
             i, j  = find_gemer(id, list_of_lakes)
-            if j:
+            if j != -1:
                 mess(id, 'Вы уже зарегистрированны в озеро под названием {}'.format(list_of_lakes[i][0]))
             else:
                 lake, kol_lakes = lake_registation(id, kol_lakes)
@@ -61,10 +61,7 @@ for i in range(100):
             continue
 
         if proverka("Список Озёр", words):
-            if len(list_of_lakes) == 0:
-                mess(id, "Озёр ещё нет")
-            for i in range(len(list_of_lakes)):
-                mess(id, list_of_lakes[i][0])
+            p_list_of_lakes(id, list_of_lakes)
             continue
 
         if len(words) > 4 and proverka("Cписок Игроков На Озере", words):
@@ -80,18 +77,25 @@ for i in range(100):
 
         if len(words) > 3 and proverka("Захожу В Озеро", words):
             i, j = find_gemer(id, list_of_lakes)
-            if j:
+            if j != -1:
                 mess(id, 'Вы уже зарегистрированны в озеро под названием {}.\n'
                          'Чтобы войти в другое озеро, сначала выйдите из этого\n'.format(list_of_lakes[i][0]))
             else:
                 i1, j1 = find_gemer(words[0], list_of_lakes)
-                list_of_lakes[i1].append(id)
-                put_obj(list_of_lakes, "list_of_lakes")
-                mess(id, 'Вы успешно вошёли в Озеро под номером {}.\n'
-                         'Название: {}\n'
-                         'Итого, список игроков на этом озере:'.format(i+1, list_of_lakes[i1][0]))
-                print_gamers_on_lake(i+1, id, list_of_lakes[i1][0])
+                if i1 != -1:
+                    mess(id, "Озера с таким названием нет. Выберете озеро из списка озёр или создавайте своё.")
+                    p_list_of_lakes(id, list_of_lakes)
+                else:
+                    list_of_lakes[i1].append(id)
+                    put_obj(list_of_lakes, "list_of_lakes")
+                    mess(id, 'Вы успешно вошёли в Озеро под номером {}.\n'
+                             'Название: {}\n'
+                             'Итого, список игроков на этом озере:'.format(i + 1, list_of_lakes[i1][0]))
+                    print_gamers_on_lake(i + 1, id, list_of_lakes[i1][0])
             continue
         if len(words) > 0:
             mess(id, 'непонятка:(')
+            time.sleep(0.5)
+            mess(id, dict_of_dilogs[str(id)][0] + ', может, напишешь:\n'
+                                             '"Помощь"?')
     time.sleep(2)

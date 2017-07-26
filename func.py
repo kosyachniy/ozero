@@ -7,6 +7,7 @@ vk.auth()
 
 
 slovarni_zapas_oneword = {'Спасибо': 'Всегда пожалуйста, уважаемый',
+        'сцук': 'Да уж, тяжела твоя доля',
          '1': 'Единичка',
          '2': 'Двойка',
          '3': 'Тройка',
@@ -20,7 +21,11 @@ slovarni_zapas_oneword = {'Спасибо': 'Всегда пожалуйста, 
          'Предел': 'Число А называется пределом последовательности, если для любого положительного ε существует такой номер N0, начиная с которого все элементы последовательности лежат в ε-окрестности числа А',
          '123': '456',
          '456': '123',
-          'Помощь': 'Регистрация нового озера: "Хочу зарегестрировать новое озеро"\nyu'
+          'Помощь': 'Список доступных фраз:\n'
+                    '"Называй меня (имя_в_одно_слово)"\n'
+                    '"Хочу зарегистрировать новое озеро"\n'
+                    '"Список озёр"\n'
+                    '"Захожу в озеро (название озера)"\n'
                           } #словарный запас
 privetstvie = ['Привет', 'Здарова', 'Здравствуй', 'Ghbdtn']
 Oskorbleniye = ['пидор', 'козёл', 'падла',
@@ -31,7 +36,7 @@ Oskorbleniye = ['пидор', 'козёл', 'падла',
                 "ЛОХ", 'Лох', 'Тупой',
                 'Глупый', 'Хуй', 'Урод']
 
-Obrashenie = ['Ты', 'Тетрис', 'Бот', 'Озеро', 'Робот', 'Компьютер', 'Калькулятор', 'Ozero']
+Obrashenie = ['Ты', 'Тетрис', 'Бот', 'Озеро', 'Робот', 'Компьютер', 'Калькулятор', 'Ozero', 'Хочу']
 
 def oskorbi(word, item):
     mess(item['user_id'], "Всё правильно: ты " + word)
@@ -45,7 +50,7 @@ def answer(item):
              #'Тысяча извинений, Иван-ВеликийСоздатель не научил меня оперировать такими сложными материями. не могли бы вы говорить понятнее?')
 
 def get_words(S):
-    lister = set('.,!-')#символы подлежащие удалению
+    lister = set('.,!-"?')#символы подлежащие удалению
     t = S.split() #список слов
     for i in range(len(t)):
         x = list(t[i])
@@ -67,12 +72,20 @@ def proverka(st, words):
             return 0
     return 1
 
+def p_list_of_lakes (id, list_of_lakes):
+    if len(list_of_lakes) == 0:
+        mess(id, "Озёр ещё нет")
+    else:
+        for i in range(len(list_of_lakes)):
+            mess(id, list_of_lakes[i][0])
+        mess(id, "Конец списка.")
+
 def find_gemer(id, list_of_lakes):
     for i in range(len(list_of_lakes)):
         for j in range(len(list_of_lakes[i])):
             if id == list_of_lakes[i][j]:
                 return i, j
-    return 0, 0
+    return -1, -1
 
 def print_gamers_on_lake(i, id, list_of_lakes):
     if len(list_of_lakes) == 0:
@@ -82,4 +95,7 @@ def print_gamers_on_lake(i, id, list_of_lakes):
             mess(id, "Игрок " + str(list_of_lakes[i][j]))
         mess(id, "Конец списка")
 
-mess=lambda id, t: vk.method('messages.send', {'user_id':id, 'message':t})
+mess=lambda id, t: vk.method('messages.send', {'user_id':id, 'message':"." + t})
+
+
+#users.get(144520879)

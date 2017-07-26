@@ -25,7 +25,8 @@ class gamers_information:
     gamer_nomber = 0
 
 class station:
-    money = 10
+    musor = 2
+    money = 100
     level = 1
     clean_level = 0
     grean = 0
@@ -35,8 +36,8 @@ class station:
     robot = 0
 
 class hod:
-    musor
-    purity
+    musor = 0
+    purity = 0
     level = 0
     clean_level = 0
     lobster = 0
@@ -56,4 +57,5 @@ class humans_day:
     h = hod()
     money_minus = 0
     money_plus = 0
+
 
