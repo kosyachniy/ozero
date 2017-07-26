@@ -1,10 +1,9 @@
-from func import *
 from lake import *
+
 values = {'out':0, 'count':10, 'time_offset':3600}
 #mess(144520879, 'Привет, я робот-помошник Тетрис-4.' + '\n'
 #                'Не хочешь зарегестрироваться на игру Озеро?' + '\n'
 #                'Напиши "Помощь" и узнаешь о чём со мной можно поговорить')
-
 
 
 dict_of_dilogs = {} #словарь списков взаиможействий с людьми "id": ["Способ обращения"(str), "Дата последнего сообщения"(int)]
@@ -13,7 +12,9 @@ list_of_lakes = [] #список списков озёр list_of_lakes[номе�
 dict_of_dilogs = get_obj('dict_of_dilogs')
 list_of_lakes = get_obj('list_of_lakes')
 
+dict_of_dilogs['144520879'][1] -= 1
 
+person = humans_day()
 kol_lakes = len(list_of_lakes)
 for i in range(200):
     res = vk.method('messages.get', values)
@@ -93,9 +94,19 @@ for i in range(200):
                              'Итого, список игроков на этом озере:'.format(i + 1, list_of_lakes[i1][0]))
                     print_gamers_on_lake(i + 1, id, list_of_lakes[i1][0])
             continue
+
+        if proverka("Ход", words):
+            words.remove(words[0])
+            person.inform.day = 5
+            person, st = make_hod(person, words)
+            mess(id, st)
+            continue
+
+
+
         if len(words) > 0:
             mess(id, 'непонятка:(')
             time.sleep(0.5)
             mess(id, dict_of_dilogs[str(id)][0] + ', может, напишешь:\n'
                                              '"Помощь"?')
-    time.sleep(2)
+    time.sleep(4)
