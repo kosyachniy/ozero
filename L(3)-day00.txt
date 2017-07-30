@@ -1,1 +1,0 @@
-{"name": "\u041e\u0437\u0435\u0440\u043e(3)", "day": 0, "kol_gamers": 1, "gamers": [182032859], "yaxts": [], "robots": [], "purity": 60, "delata_purity": 0}

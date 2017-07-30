@@ -1,26 +1,17 @@
 import vk_api
 import time
-#import vk
+
 vk = vk_api.VkApi(token='5998b265c9a37305498547c92781806b617eb4fe01131cc738d877a5d29b45beb8600d4371980cb525910')
-#vk = vk_api.VkApi(login='79193540345', password='')
-vk.auth()
-"""
-vk.users.get(user_id=144520879)
-
-x = vk.users(user_id=144520879)
-x = vk.status.get()
-x = vk_api.Session()
+Vano = vk_api.VkApi(login="79193540345", password='1йфячыц2')
+vk.auth()#заходит в группу
+Vano.auth()
 
 
+def send_stiker(id, nom):
+    dict = {'user_id': id, 'sticker_id': nom}
+    mess(id, "Пробуем отправить стикер")
+    vk.method('messages.send', dict)
 
-
-vk.users.get()
-print(vk_api)
-
-session = vk_api.Session()
-vk_api = vk.API(session)
-print(vk_api.users.get(user_id=144520879))
-"""
 slovarni_zapas_oneword = {'Спасибо': 'Всегда пожалуйста, уважаемый',
         'сцук': 'Да уж, тяжела твоя доля',
         'Ход': 'Какой?',
@@ -64,52 +55,72 @@ def answer(item):
              #'Тысяча извинений, Иван-ВеликийСоздатель не научил меня оперировать такими сложными материями. не могли бы вы говорить понятнее?')
 
 def get_words(S):
-    lister = set('.,!-:"?')#символы подлежащие удалению
+    lister = set('.,!-:"ёЁ')#символы подлежащие удалению
     t = S.split() #список слов
+    flag = 1 #из названия яхт и парков символы не удаляются
     for i in range(len(t)):
-        x = list(t[i])
-        j = 0
-        while j < len(x):
-            if x[j] in lister:
-                x.pop(j)
-                j = j - 1
-            j = j + 1
-        t[i] = (str().join(x)).title() #собирает слово из списка и делает так, что первый символ каждого слова - большая буква, остальные маленькие
+        if flag == 1:
+            x = list(t[i])
+            j = 0
+            while j < len(x):
+                if x[j] in lister:
+                    if x[j] == 'ё' or x[j] == 'Ё':
+                        if j == 0:
+                            x[j] = 'Е'
+                        else:
+                            x[j] = 'е'
+                    else:
+                        x.pop(j)
+                        j = j - 1
+                j = j + 1
+            t[i] = (str().join(x)).title() #собирает слово из списка и делает так, что первый символ каждого слова - большая буква, остальные маленькие
+        else:
+            if t[i] == "@" or t[i][-1:] == "@":
+                flag = 1
+        if t[i] in words_unite:
+            flag = 0
     return t
+
+musor_set = set(["М", "Мусорю", "Мусор", "Мусорим"])
+claen_set = set(["Ч", "Чистим", "Чищу"])
+pokupka_set = set(["П", "Покупка", "Покупаю", "Приобретаю"])
+
+
+lobster_set = set(["Л", "Лобстер", "Лобстера", "Лобстеров", "Лобстеры"])
+yaxt_set = set(["Я", "Яхта", "Яхту"])
+park_set = set(["П", "Парк"])
+robot_set = set(["Р", "Робот", "Робота"])
+
+attak_set = set(["А", "Атака", "Атакую", "Атакуем"])
+diversion_set = set(["Д", "Диверсия"])
+sponsor_set = set(["С", "Спонсирую", "Спонсорство"])
+green_set = set(["Г", "Гринпис", "Голосую"])
+pokupka_unite = set.union(yaxt_set, park_set, lobster_set, robot_set)
+words_unite = set.union(yaxt_set, park_set)
+
 
 def proverka(st, words):
     list = st.split()
     if len(list) > len(words):
         return 0
     for i in range(len(list)):
-        if list[i] != words[i]:
+        if not(list[i] == words[i]):
             return 0
     return 1
 
 def p_list_of_lakes (id, list_of_lakes):
-    if len(list_of_lakes) == 0:
+    if len(list_of_lakes) == 1:
         mess(id, "Озёр ещё нет")
     else:
-        for i in range(len(list_of_lakes)):
+        for i in range(1, len(list_of_lakes)):
             mess(id, list_of_lakes[i][0])
         mess(id, "Конец списка.")
 
 def find_gemer(id, list_of_lakes):
-    for i in range(len(list_of_lakes)):
-        for j in range(len(list_of_lakes[i])):
+    for i in range(1, len(list_of_lakes)):
+        for j in range(1, len(list_of_lakes[i])):
             if id == list_of_lakes[i][j]:
                 return i, j
     return -1, -1
 
-def print_gamers_on_lake(i, id, list_of_lakes):
-    if len(list_of_lakes) == 0:
-        mess(id, "На озере "+list_of_lakes[0]+" никого нет")
-    else:
-        for j in range(1, len(list_of_lakes[i])):
-            mess(id, "Игрок " + str(list_of_lakes[i][j]))
-        mess(id, "Конец списка")
-
-mess=lambda id, t: vk.method('messages.send', {'user_id':id, 'message':"." + t})
-
-
-#users.get(144520879)
+mess=lambda id, t: vk.method('messages.send', {'user_id':int(id), 'message':"." + t})
