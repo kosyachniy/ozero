@@ -1,1 +1,1 @@
-{"musor": 0, "purity": 1, "level": 0, "clean_level": 0, "lobster": 0, "yaxt": "", "park": "", "robot": 0, "attak_name": 0, "diversion_name": 0, "diversion_money": 0, "sponsor_name": 0, "sponsor_money": 0, "grean": 0}
+{"musor": 0, "purity": 0, "level": 0, "clean_level": 0, "lobster": 0, "yaxt": "\u0418\u043e\u0441\u0438\u0444_\u0412\u0438\u0441\u0441\u0430\u0440\u0438\u043e\u043d\u043e\u0432\u0438\u0447@ ", "park": "", "robot": 0, "attak_name": 0, "diversion_name": 0, "diversion_money": 0, "sponsor_name": 0, "sponsor_money": 0, "green": 0}
