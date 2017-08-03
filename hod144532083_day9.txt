@@ -1,1 +1,0 @@
-{"musor": 1.0, "purity": 0, "level": 0, "clean_level": 0, "lobster": 0, "yaxt": "", "park": "", "robot": 0, "attak_name": 0, "diversion_name": 0, "diversion_money": 0, "sponsor_name": 0, "sponsor_money": 0, "green": 0}

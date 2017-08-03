@@ -2,12 +2,21 @@ from json import *
 from func import *
 
 def put_obj(obj, s):
-    with open(s + '.txt', 'w') as f:
+    with open('data/' + s + '.txt', 'w') as f:
         print(dumps(obj), file = f)
 
 def get_obj(s):
-    with open(s + '.txt', 'r') as f:
+    with open('data/' + s + '.txt', 'r') as f:
         return loads(f.read())
+
+def red_hod_to_state(id, h, s):
+        h['musor'] = max(h['musor'], s['musor'])
+        if h['robot']:
+            if s['robot'][0]:
+                h['robot'] = [1, h['robot']]
+            else:
+                h['robot'] = [0, h['robot']]
+        return h
 
 def lake_registation(id, list_of_lakes):
     i = 1
@@ -20,10 +29,6 @@ def lake_registation(id, list_of_lakes):
         list_of_lakes[i] = ["Озеро" + str(i), id]
     return i, list_of_lakes
 
-class class_for_lake:
-    nomber = 0
-    name = ''
-
 def gamers_information(id):
     return {'id': id,
     'name': "",
@@ -31,7 +36,7 @@ def gamers_information(id):
     'gamer_nomber': 0,
     'day': 0}
 
-def station():
+def state():
     return {'musor': 2,
     'money': 100,
     'level': 1,
@@ -40,7 +45,16 @@ def station():
     'lobsters': 0,
     'yaxts': [],
     'parks': [],
-    'robot': 0}
+    'robot': [0, 0]}
+
+
+
+def do_game(d, dict, list):
+    set = d.keys()
+    for i in set:
+        d[i]
+
+
 
 def hod():
     return {'musor': 0,
@@ -61,8 +75,6 @@ def humans_day(id):
     'money_minus': 0,
     'money_plus': 0}
 
-
-
 def one(i, words, set):
     if len(words) > i and words[i] in set and words[i+1].isdigit():
         return 1
@@ -79,7 +91,6 @@ def tchk(s):
     return s
 
 def anser_for_hod(day, id, h):
-    print("otvet")
     st = "Ход за день " + str(day) + ":\n"
     st += "Мусорим на " + str(h['musor']) + '\n'
     if h['purity']:
@@ -91,10 +102,13 @@ def anser_for_hod(day, id, h):
     if h['lobster']:
         st += "Сегодня у вас на ужин аристократические лобстеры\n"
     if h['robot']:
-        if h['robot'] >= 180:
-            st += "Вы покупаете робота за 180 и устонавиваете ему защиту за {}\n".format(h['robot']-180)
+        if h['robot'][0]:
+            if h['robot'] >= 180:
+                st += "Вы покупаете робота за 180 и устонавиваете ему защиту за {}\n".format(h['robot']-180)
+            else:
+                st += "На покупку робота нужно 180, а вы меньше поставили("
         else:
-            st += "На покупку робота нужно 180, а вы меньше поставили("
+            st += "Повышение защиты робота на {}".format(h['robot'][1])
     if h['yaxt']:
         st += "Купили яхту: {}".format(h['yaxt'])
     if h['park']:
@@ -109,8 +123,10 @@ def anser_for_hod(day, id, h):
     if h['sponsor_money'] and h['sponsor_name']:
         st += "Спонсируем игрока под номером " + str(h['sponsor_name']) + " на " + str(
             h['sponsor_money']) + ' едениц\n'
-    print(st)
     mess(id, st)
+
+
+
 
 
 
