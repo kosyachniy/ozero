@@ -1,5 +1,25 @@
 from func import *
 
+def red_hod_to_state(id, h, s, reg_list, dict_of_dilogs, list_of_robots):
+    h['musor'] = min(h['musor'], s['musor'])
+    nom_of_our_lake = dict_of_dilogs[id]['lake']
+    if len(reg_list[nom_of_our_lake]) > h['attak_name']:
+        h['attak_name'] = 0
+    if not(h['diversion_name'] and h['diversion_money']):
+        h['diversion_name'] = 0
+        h['diversion_money'] = 0
+    else:
+        if h['diversion_name'].isdigit():
+            if h['diversion_name'] < len(list_of_robots) - 1:
+                h['diversion_name'] = ""
+        else:
+            if list_of_robots.count(h['diversion_name']):
+                h['diversion_name'] = list_of_robots.index(h['diversion_name'])
+    return h
+
+
+
+
 musor_set = set(["М", "Мусорю", "Мусор", "Мусорим"])
 purity_set = set(["Ч", "Чистим", "Чищу"])
 pokupka_set = set(["П", "Покупка", "Покупаю", "Приобретаю"])
@@ -18,14 +38,7 @@ green_set = set(["Г", "Гринпис", "Голосую"])
 pokupka_unite = set.union(yaxt_set, park_set, lobster_set, robot_set)
 words_unite = set.union(yaxt_set, park_set)
 
-def red_hod_to_state(id, h, s):
-        h['musor'] = min(h['musor'], s['musor'])
-        if h['robot']:
-            if s['robot'][0]:
-                h['robot'] = [1, h['robot']]
-            else:
-                h['robot'] = [0, h['robot']]
-        return h
+
 def one(i, words, set):
     if len(words) > i and words[i] in set and words[i+1].isdigit():
         return 1
@@ -49,22 +62,22 @@ def anser_for_hod(day, id, h):
         st += "Покупаем фильтры\n"
     if h['lobster']:
         st += "Сегодня у вас на ужин аристократические лобстеры\n"
-    if h['robot']:
-        if h['robot'][0]:
-            if h['robot'] >= 180:
-                st += "Вы покупаете робота за 180 и устонавиваете ему защиту за {}\n".format(h['robot']-180)
-            else:
-                st += "На покупку робота нужно 180, а вы меньше поставили("
+    if h['robot'][0]:
+        st += "Покупаем робота " + h['robot'][0] + "\n"
+        if h['robot']:
+            st += "Вы покупаете робота за 180 и устонавиваете ему защиту на {}\n".format(h['robot'][1])
         else:
-            st += "Повышение защиты робота на {}".format(h['robot'][1])
+            st += "Если у вас есть робот, его броня будет увеличена на " + str(h['robot'][1])
     if h['yaxt']:
         st += "Купили яхту: {}".format(h['yaxt'])
     if h['park']:
         st += "Купили парк: {}".format(h['park'])
     if h['attak_name']:
-        st += "Атакуем игрока под номером " + str(h['attak_name']) + "\n"
+        st += "Атакуем игрока на вашем озере под номером " + str(h['attak_name']) + "\n"
     if h['green']:
-        st += "Голосуем против игрока под номером " + str(h['green']) + "\n"
+        st += "Голосуем против игрока на вашем озере под номером " + str(h['green']) + "\n"
+    else:
+        st += "Вы голосуете против себя, так как ни за кого не проголосовали"
     if h['diversion_name'] and h['diversion_money']:
         st += "Диверсия на робота под номером " + str(h['diversion_name']) + ", тратим " + str(
             h['diversion_money']) + '\n'
@@ -72,10 +85,9 @@ def anser_for_hod(day, id, h):
         st += "Спонсируем игрока под номером " + str(h['sponsor_name']) + " на " + str(
             h['sponsor_money']) + ' едениц\n'
     mess(id, st)
-def make_hod_file(day, id, words): #создаёт файл "hod-
+def make_hod_file(id, words): #создаёт файл "hod-
     h = hod()
     i = 0
-    print(words)
     ch = '' #счётчик
     st = ""
     while i < len(words):
@@ -110,27 +122,22 @@ def make_hod_file(day, id, words): #создаёт файл "hod-
                 if len(words[i]) > 2 or not(words[i].isdigit()):
                     mess(id, "Неккоректное колличество мусора")
                     ch = ''
-                    break
+                    return hod()
                 else:
-                    h['musor'] = float(tchk(words[i]))
+                    h['musor'] = float(tchk(words[i])) #сразу мусорим правильно
                     ch = ''
-            elif ch == 'r' and words[i].isdigit():
-                h['robot'] = int(words[i])
+            elif ch == 'r':
+                if words[i].isdigit():
+                    h['robot'][1] = int(words[i])
+                else:
+                    h['robot'][0] = words[i]
+                if i + 1 > len(words) and words[i+1].isdigit():
+                    h['robot'][1] = int(words[i+1])
                 ch = ''
             elif ch == 'y':
-                if words[i] == "@":
-                    ch = ''
-                    h['yaxt'] = st
-                    st = ""
-                else:
-                    st += words[i] + ' '
+                h['yaxt'] = words[i]
             elif ch == 'p':
-                if words[i] == "@":
-                    ch = ''
-                    h['park'] = st
-                    st = ""
-                else:
-                    st += words[i] + ' '
+                h['park'] = words[i]
             elif ch == 'a':
                 if s.isdigit():
                     h['attak_name'] = int(s)
@@ -160,12 +167,8 @@ def make_hod_file(day, id, words): #создаёт файл "hod-
                     h['sponsor_money'] = int(s)
                 ch = ''
         i += 1
-    if ch == 'y':
-        h['yaxt'] = st
-    if ch == 'p':
-        h['park'] = st
-    put_obj(h, "hod" + str(id) + "_day" + str(day))
     return h
+
 def state():
     return {'musor': 2,
     'money': 100,
@@ -175,10 +178,9 @@ def state():
     'lobsters': 0,
     'yaxts': [],
     'parks': [],
-    'robot': [0, 0],
+    'robot': ["", 0],
     'money_minus': 0,
     'money_plus': 0}
-
 def hod():
     return {'musor': 0,#1+
             'purity': 0,#2
@@ -187,7 +189,7 @@ def hod():
             'lobster': 0,#5
             'yaxt': "",#6
             'park': "",#7
-            'robot': 0,#8
+            'robot': ["", 0],#8
             'attak_name': 0,#9
             'diversion_name': 0,#10
             'diversion_money': 0, #11
@@ -223,15 +225,20 @@ def do_game(day, dict, list, list_robots):
         day[i]['s_new'] = s
     for i in set:
         put_obj(day[i]['s_new'], i+'-s'+str(list[0]))
-
 def k(x):
     return 1
-
-def lake(st):
+def lake(st, id):
     return {
         'name': st,
         'purity': 60,
-        'gamers': [],
+        'gamers': [id,],
         'yaxt': [],
         'parks': [],
         'robots': []}
+
+def make_list_of_robots(list_of_lakes):
+    list = []
+    for i in range(1,len(list_of_lakes)):
+        for j in range(len(list_of_lakes[i]['robots'])):
+            list.append(list_of_lakes[i]['robots'][j])
+    return list

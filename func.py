@@ -62,41 +62,42 @@ Oskorbleniye = ['Пидор', 'Козёл', 'Падла',
                 'Гнида', 'Лох', 'Тупой',
                 'Глупый', 'Хуй', 'Урод',
                 'Козёл', 'Падла','Гнида']
-
 Obrashenie = ['Ты', 'Тетрис', 'Бот', 'Озеро', 'Робот', 'Компьютер', 'Калькулятор', 'Ozero', 'Хочу']
-
 def oskorbi(word, item):
     mess(item['user_id'], "Всё правильно: ты " + word)
 
 def get_words(S):
-    lister = set('.,!-:?"ёЁ')#символы подлежащие удалению
-    t = S.split() #список слов
-    flag = 1 #из названия яхт и парков символы не удаляются
-    for i in range(len(t)):
-        if flag == 1:
-            x = list(t[i])
-            j = 0
-            while j < len(x):
-                if x[j] in lister:
-                    if x[j] == 'ё' or x[j] == 'Ё':
-                        if j == 0:
-                            x[j] = 'Е'
-                        else:
-                            x[j] = 'е'
-                    else:
-                        x.pop(j)
-                        j = j - 1
-                j = j + 1
-            t[i] = (str().join(x)).title() #собирает слово из списка и делает так, что первый символ каждого слова - большая буква, остальные маленькие
+    S = S + '%'
+    lister = set('.,!- :?%"ёЁ')  # символы подлежащие удалению и изменению
+    words = []
+    flag = 1
+    L = len(S)
+    i = 0
+    st = ""
+    while i < L:
+        if flag:
+            if S[i] in lister:
+                if S[i] == ' ' or S[i] == '%':
+                    if st:
+                        words.append(st.title())
+                        st = ""
+                elif S[i] == 'Ё' or S[i] == 'ё':
+                    st += 'e'
+            else:
+                st += S[i]
         else:
-            if t[i] == "@" or t[i][-1:] == "@":
-                flag = 1
-        if t[i] in words_unite:
-            flag = 0
-    return t
-
-
-
+            if S[i] != '%':
+                st += S[i]
+        if S[i] == '%':
+            if st:
+                if flag:
+                    words.append(st.title())
+                else:
+                    words.append(st)
+                st = ''
+            flag = not(flag)
+        i += 1
+    return words
 
 def proverka(st, words):
     list = st.split()

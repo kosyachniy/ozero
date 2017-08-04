@@ -3,7 +3,10 @@ import vk_api
 Vano = vk_api.VkApi(login="79193540345", password='1йфячыц2')
 Vano.auth()
 
-values = {'out': 0, 'count': 10, 'time_offset': 180}
+#Vano.method('photos.createAlbum', {'title': "Проверка роботоспособности"})
 
-res = Vano.method('messages.get', values)
-print(res)
+server, photos_list, aid, hash,
+
+x = Vano.method("photos.getUploadServer", {'album_id':246676489})
+Vano.method("photos.save", {'album_id':246676489})
+print(x)
