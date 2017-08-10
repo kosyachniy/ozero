@@ -69,7 +69,7 @@ def oskorbi(word, item):
 
 def get_words(S):
     S = S + '%'
-    lister = set('.,!- :?%"ёЁ')  # символы подлежащие удалению и изменению
+    lister = set('.,! :?%"ёЁ')  # символы подлежащие удалению и изменению
     words = []
     flag = 1
     L = len(S)
@@ -101,8 +101,6 @@ def get_words(S):
     return words
 
 
-
-
 def p_reg_list (id, reg_list):
     if len(reg_list) == 1:
         mess(id, "Озёр ещё нет")
@@ -129,5 +127,46 @@ def lake_registation(id, reg_list):
     else:
         reg_list[i] = ["Озеро" + str(i), id]
     return i, reg_list
+
+def mess_day(x):
+    st = ''
+    if x == 1:
+        st = 'первый'
+    elif x == 2:
+        st = 'второй'
+    elif x == 3:
+        st = 'третий'
+    elif x == 4:
+        st = 'четвётрый'
+    elif x == 5:
+        st = 'пятый'
+    elif x == 6:
+        st = 'шестой'
+    elif x == 7:
+        st = 'седьмой'
+    elif x == 8:
+        st = 'восьмой'
+    elif x == 9:
+        st = 'девятый'
+    elif x == 10:
+        st = 'десятый'
+    elif x == 11:
+        st = 'одиннадцатый'
+    elif x == 12:
+        st = 'двенадцатый'
+    elif x == 13:
+        st = 'тринадцатый'
+    elif x == 14:
+        st = 'четырнадцатый'
+    elif x == 15:
+        st = 'пятнадцатый'
+    elif x == 16:
+        st = 'шестнадцатый'
+    elif x == 17:
+        st = 'семнадцатый'
+    else:
+        st = str(x)
+    mess(id, "Сегодня "+st+" день")
+
 
 mess=lambda id, t: vk.method('messages.send', {'user_id':int(id), 'message':"." + t})

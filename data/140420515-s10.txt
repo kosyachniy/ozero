@@ -1,0 +1,1 @@
+{"musor": 2.0, "money": 170.0, "level": 2, "clean_level": 0, "grean": 0, "lobster": 0, "yaxt": [], "park": [], "robot": ["", 0], "money_minus": 0, "money_plus": 0}
