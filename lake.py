@@ -9,10 +9,17 @@ def red_hod_to_state(id, h, s, reg_list, dict_of_dilogs, list_of_lakes, list_of_
     h['inf'] += "Утилизация мусора заберёт " + str(money_minus) + " ед\n"
     if h['level']:
         money_minus += 90 + 30*s['level']
-    if h['clean_level']:
-        money_minus += 90 + 30*s['level']
-    if h['purity']:
+    if h['lobster']:
         money_minus += 60
+    if h['clean_level']:
+        money_minus += 120
+    if h['purity']:
+        money_minus += 30
+    if h['yaxt']:
+        money_minus += 180
+    if h['park']:
+        money_minus += 600
+    print("money_plus:= ", money_plus, ". money_minus:= ", money_minus)
     h['inf'] += "Предпологаемая прибыль: " + str(money_plus-money_minus) + " ед\n"
     if s['money'] < money_minus:
         mess(id, "Внимание! Attention! Aufmerksamkeit!\n"
@@ -51,17 +58,22 @@ def tchk(s):
     if s[0] == '0':
         return s[0] + '.' + s[1:]
     return s
+
 def anser_for_hod(day, id, h, s):
-    st = "Ход за день " + str(day) + ":\n"
-    st += "Мусорим на " + str(h['musor']) + '\n'
+    st = "Принят ход за день " + str(day) + ":\n"
+    st += "Мусорим на " + str(h['musor']) + ' из '+str(s['musor'])+'\n'
     if h['purity']:
-        st += "Чистим своими силами за 60 ед\n"
+        st += "Чистим своими силами за 30 ед\n"
     if h['level']:
         st += "Улучшаем производство на заводе за "+ str(90 + 30*s['level']) +" ед\n"
     if h['clean_level']:
-        st += "Покупаем фильтры за"+ str(120+20*s['level']) +"ед\n"
-
-    print("answer")
+        st += "Покупаем фильтры за 120 ед\n"
+    if h['lobster']:
+        st += "На ужин сегодня роскошные лобстеры за 60 ед\n"
+    if h['yaxt']:
+        st += "Ваша новая яхта будет называться " + h['yaxt']+'\n'
+    if h['park']:
+        st += "Завтра досторят новый парк аттракционов: " + h['park']+'\n'
     mess(id, st)
     mess(id, h['inf'])
 
@@ -99,6 +111,7 @@ def make_hod_file(id, words): #создаёт файл "hod-
                 ch = 'g'
         else:
             if ch == 'm':
+                print(words[i].isdigit())
                 if len(words[i]) > 2 or not(words[i].isdigit()):
                     mess(id, "Неккоректное колличество мусора")
                     ch = ''
@@ -116,8 +129,10 @@ def make_hod_file(id, words): #создаёт файл "hod-
                 ch = ''
             elif ch == 'y':
                 h['yaxt'] = words[i]
+                ch = ''
             elif ch == 'p':
                 h['park'] = words[i]
+                ch = ''
             elif ch == 'a':
                 if s.isdigit():
                     h['attak_name'] = int(s)
@@ -190,36 +205,49 @@ def hod():
 def do_game(game, dict, reg_list, list_of_lakes, list_of_robots, dict_of_dilogs):
     set = game.keys()
     for i in set: #i == id
-        L = dict_of_dilogs[i]['lake']
+        L = dict_of_dilogs[i]['lake'] #номер озера
         h = game[i]['h']
         s = game[i]['s']
         h['inf'] = ''
         vuruchka = 30*list_of_lakes[L]['k']*s['level'] #(+)ежедневная прибыль
         if h['clean_level']:
             s['clean_level'] += 1 #(!) не больше 10того уровня
-            clean = 120 + 30*s['clean_level']
-            s['money_minus'] += clean
-            h['inf'] += 'Установили новые фильтры за' + str(clean) + ' ед. \n'
+            s['money_minus'] += 120
+            h['inf'] += 'Установили новые фильтры за 120 ед. \n'
         util_prise = (s['musor'] - h['musor'])*10 #(+)тратим деньги на утилизацию
         s['money_plus'] += vuruchka
         s['money_minus'] += util_prise
         list_of_lakes[L]['purity'] -= h['musor'] #(+)у озера уходят намусоренные проценты
         s['musor'] = s['level']*(1 - 0.1*s['clean_level']) #(не хватает фильтрв) появляются новые еденицы мусора
 
+        if h['lobster']:
+            s['money_minus'] += 60
+            s['lobster'] += 1
+            h['inf'] += 'Купили лобстеров за 60 ед\n'
+        if h['yaxt']:
+            print('yaxt:',h['yaxt'])
+            s['money_minus'] += 180
+            h['inf'] += '"'+h['yaxt'] + '" завтра выйдет в озеро\n'
+            s['yaxt'].append(h['yaxt'])
+            list_of_lakes[L]['yaxt'].append(h['yaxt'])
+        if h['park']:
+            print('park:',h['park'])
+            s['money_minus'] += 600
+            h['inf'] += '"'+h['park'] + '" ваш новый парк аттаркционов\n'
+            s['park'].append(h['park'])
+            list_of_lakes[L]['park'].append(h['park'])
         if h['level']:
-            level_prise = 90 + 30*s['level']
-            s['money_minus'] += level_prise
-            h['inf'] += 'Купили новый уровень за ' + str(level_prise) + '\n'
-        s['level'] += h['level']  # покупаем уровень
+            s['money_minus'] += 120
+            h['inf'] += 'Купили новый уровень за 120 ед\n'
+            s['level'] += 1  # покупаем уровень
         h['inf'] += 'Фабрика принесла выручку: ' + str(vuruchka) + '\n'
         h['inf'] += 'На утилизацию вы потратили ' + str(util_prise) + '\n'
 
         if h['purity']:
             list_of_lakes[L]['purity'] += 1
-            h['inf'] += 'Почистили совими силами за 60 ед\n'
-            s['money_minus'] += 60
-        game[i]['s'] = s
-        game[i]['h'] = h
+            h['inf'] += 'Почистили совими силами за 30 ед\n'
+            s['money_minus'] += 30
+        game[i]['h']['inf'] = h['inf']
         game[i]['s']['money_minus'] = s['money_minus']
         game[i]['s']['money_plus'] = s['money_plus']
         game[i]['s_new'] = s
@@ -233,10 +261,10 @@ def do_game(game, dict, reg_list, list_of_lakes, list_of_robots, dict_of_dilogs)
         game[i]['s_new']['money'] += game[i]['s_new']['money_plus']
         game[i]['s_new']['money_minus'] = 0
         game[i]['s_new']['money_plus'] = 0
-        mess(i, "Доброе утро! Новый день "+str(reg_list[0]+1)+". Вчера вы \n" + game[i]['h']['inf'])
+        mess(i, "Доброе утро! Новый день "+str(reg_list[0]+1)+"\n Вчера вы \n" + game[i]['h']['inf'] +"\nВ кармане "+str(game[i]['s_new']['money']))
         put_obj(h, i+'-h'+str(reg_list[0]))
         put_obj(game[i]['s_new'], i+'-s'+str(reg_list[0] + 1))
-        put_obj(list_of_lakes, 'list_of_lakes')
+    put_obj(list_of_lakes, 'list_of_lakes')
     return game
 
 def k(x):

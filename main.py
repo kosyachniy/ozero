@@ -37,7 +37,7 @@ def chek_list_of_dilogs():
     if not(id in dict_of_dilogs):  # если с этим человеком мы ещё не разговривали, добавляем его в словарь
         x = Vano.method("users.get", {"user_ids": id})[0]
         dict_of_dilogs[id] = {"obr": x["first_name"], "date": item['date'], "first_name": x["first_name"],
-                                   "last_name": x["last_name"], "status": 'New', "lake": 0, "nom": 0, "admin":0}  # !!
+                                   "last_name": x["last_name"], "status": 'New', "lake": 0, "nom": 0, "admin":0, "cheat": ""}  # !!
         if int(id) == 144520879 or int(id) == 140420515:
             dict_of_dilogs[id]['admin'] = 1
         put_obj(dict_of_dilogs, 'dict_of_dilogs')
@@ -58,6 +58,8 @@ values = {'out': 0, 'count': 10, 'time_offset': 3600}
 
 def answer_to_admin():
     global list_of_lakes, dict_of_dilogs, reg_list, words
+    if proverka("Помощь"):
+        mess(id, "В помощь админу:\nОбнулить\nДай словарь\nДай список\nДай регистрацию\nУстановить день\nСделать ход\n")
     if proverka("Обнулить"):
         reg_list = [8, ]
         dict_of_dilogs = {}
@@ -100,42 +102,66 @@ def answer_to_admin():
     return 0
 
 def answer_to_gamer():
-    if proverka("Дай Озеро"):
-        L = dict_of_dilogs[id]['lake']
-        mess(id, str(list_of_lakes[L]))
+    global dict_of_dilogs
+    if proverka("Помощь"):
+        mess(id, 'В помощь игроку:\n"Дай"\n"Выйти Из Моего Озера"\n"Список"\n"Как сделать ход"\n')
+
+    if proverka("Sv_Cheats 1"): #len(words) > 1 and words[0] == "Sv_Cheats" and words[1] == '1':
+        dict_of_dilogs[id]['cheat'] = '1'
+        mess(id, "Читы включены")
         return 1
-    if proverka("Дай Состояние"):
-        if len(words) > 2:
-            if len(words[2]) > 1 and (words[2][0] == '-' or words[2][0] == '+') and words[2][1:].isdigit():
-                day = str(reg_list[0] + int(words[2]))
-            elif words[2].isdigit():
-                day = words[2]
+    if dict_of_dilogs[id]['cheat'] and proverka("Impuls 101"):
+        string = id+'-s'+str(reg_list[0])
+        s = get_obj(string)
+        s['money'] += 1010
+        put_obj(s, string)
+        return 1
+    print(words)
+    print(words[0])
+    print(words[0] == 'Дай')
+    if words[0] == "Дай":
+        print("daiy")
+        if len(words) == 1:
+            mess(id, 'Напишите\n "Дай ход" или "Дай состояние", чтобы узнать свой ход или состояние за текущий день.\n"Дай ход 4" чтобы узнать ход за день 4\n"Дай состояние -1" чтобы узнать состояние за вчерашний день')
+            print('len == 0')
+            return 1
+        if words[1] == 'Озеро':
+            L = dict_of_dilogs[id]['lake']
+            mess(id, str(list_of_lakes[L]))
+            return 1
+        if words[1] == "Состояние":
+            if len(words) > 2:
+                if len(words[2]) > 1 and (words[2][0] == '-' or words[2][0] == '+') and words[2][1:].isdigit():
+                    day = str(reg_list[0] + int(words[2]))
+                elif words[2].isdigit():
+                    day = words[2]
+                else:
+                    day = str(10000)
             else:
-                day = 10000
-        else:
-            day = str(reg_list[0])
-        st = id + '-s' + day
-        if os.path.exists('data/' + st + ".txt"):
-            mess(id, "Состояние за день "+str(int(day))+' '+str(get_obj(st)))
-        else:
-            mess(id, "Файл не найден")
-        return 1
-    if proverka("Дай Ход"):
-        if len(words) > 2:
-            if len(words[2]) > 1 and (words[2][0] == '-' or words[2][0] == '+') and words[2][1:].isdigit():
-                day = str(reg_list[0] + int(words[2]))
-            elif words[2].isdigit():
-                day = words[2]
+                day = str(reg_list[0])
+            st = id + '-s' + day
+            if os.path.exists('data/' + st + ".txt"):
+                daiy_s(day, id)
+                mess(id, "Состояние за день "+str(int(day))+' '+str(get_obj(st)))
             else:
-                day = 10000
-        else:
-            day = str(reg_list[0])
-        st = id + '-h' + day
-        if os.path.exists('data/' + st + ".txt"):
-            mess(id, "Ход за день "+day+' '+str(get_obj(st)))
-        else:
-            mess(id, "Файл не найден")
-        return 1
+                mess(id, "Файл не найден")
+            return 1
+        if words[1] == "Ход":
+            if len(words) > 2:
+                if len(words[2]) > 1 and (words[2][0] == '-' or words[2][0] == '+') and words[2][1:].isdigit():
+                    day = str(reg_list[0] + int(words[2]))
+                elif words[2].isdigit():
+                    day = words[2]
+                else:
+                    day = 10000
+            else:
+                day = str(reg_list[0])
+            st = id + '-h' + day
+            if os.path.exists('data/' + st + ".txt"):
+                mess(id, "Ход за день "+day+' '+str(get_obj(st)))
+            else:
+                mess(id, "Файл не найден")
+            return 1
     return 0
 
 def answer():
@@ -143,6 +169,8 @@ def answer():
         if words[0] in privetstvie:
             mess(id, "И тебе привет, " + dict_of_dilogs[id]['obr'] + ' :-)')
             words.remove(words[0])
+    if len(words) == 0:
+        return 1
     if dict_of_dilogs[id]['admin']:
         if answer_to_admin():
             return 1
@@ -170,8 +198,10 @@ for i in range(2000):
 
         words = get_words(item['body'])
         print("Words:= ", words)
-        if answer():
+        if len(words) > 0 and answer():
             continue
+
+
 
 
         if len(words) == 1 and words[0] in slovarni_zapas_oneword:
@@ -192,7 +222,7 @@ for i in range(2000):
             continue
 
         if proverka("Какой Сейчас День"):
-            mess_day(id, reg_list[0])
+            mess(id, "Сегодня " + sPM(reg_list[0])+" день")
             continue
 
         if proverka("Как Сделать Ход"):

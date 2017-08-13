@@ -69,7 +69,7 @@ def oskorbi(word, item):
 
 def get_words(S):
     S = S + '%'
-    lister = set('.,! :?%"ёЁ')  # символы подлежащие удалению и изменению
+    lister = set(',! :?%"ёЁ')  # символы подлежащие удалению и изменению
     words = []
     flag = 1
     L = len(S)
@@ -128,7 +128,7 @@ def lake_registation(id, reg_list):
         reg_list[i] = ["Озеро" + str(i), id]
     return i, reg_list
 
-def mess_day(x):
+def sPM(x): #строчку в порядковое числительное муржского рода
     st = ''
     if x == 1:
         st = 'первый'
@@ -166,7 +166,66 @@ def mess_day(x):
         st = 'семнадцатый'
     else:
         st = str(x)
-    mess(id, "Сегодня "+st+" день")
+    return st
+
+def sKM(x): #строчку в числительно
+    st = ''
+    if x == 0:
+        st == 'ноль'
+    elif x == 1:
+        st = 'один'
+    elif x == 2:
+        st = 'два'
+    elif x == 3:
+        st = 'три'
+    elif x == 4:
+        st = 'четыре'
+    elif x == 5:
+        st = 'пять'
+    elif x == 6:
+        st = 'шесть'
+    elif x == 7:
+        st = 'семь'
+    elif x == 8:
+        st = 'восемь'
+    elif x == 9:
+        st = 'девять'
+    elif x == 10:
+        st = 'десять'
+    elif x == 11:
+        st = 'одиннадцать'
+    elif x == 12:
+        st = 'двенадцать'
+    elif x == 13:
+        st = 'тринадцать'
+    elif x == 14:
+        st = 'четырнадцать'
+    elif x == 15:
+        st = 'пятнадцать'
+    elif x == 16:
+        st = 'шестнадцать'
+    elif x == 17:
+        st = 'семнадцать'
+    else:
+        st = str(x)
+    return st
+
+
+def daiy_s(day, id):
+    s = get_obj(id+'-s'+str(day))
+    st = "Ваше состояние за день " + str(day)
+    st += "\nВ кармане "+str(s['money'])+" ед\nНа складе "+str(s['musor'])+" едениц отходов\nУровень производства "+str(s['level'])+"\n"
+    if s['clean_level']:
+        st += "Уровень фильтра "+str(s['clean_level']) + "/10\n"
+    if s['lobster']:
+        st += "Вы ужинали лобстерами "+sKM(s['lobster'])+" раз\n"
+    if s['yaxt']:
+        st += sKM(len(s['yaxt'])).title()+" ваши гордые яхты плавают в озере\n"
+    if s['park']:
+        st += "Вы посторили "+sKM(len(s['park']))+" парк аттракционов\n"
+    if s['robot'][0]:
+        st += "Робот " + s['robot'][0] + " с защитой "+sKM(s['robot'][1]) + " работает без перебоев\n"
+    mess(id, st)
 
 
 mess=lambda id, t: vk.method('messages.send', {'user_id':int(id), 'message':"." + t})
