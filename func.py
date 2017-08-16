@@ -14,23 +14,6 @@ def put_obj(obj, s):
 def get_obj(s):
     with open('data/' + s + '.txt', 'r') as f:
         return loads(f.read())
-
-musor_set = set(["М", "Мусорю", "Мусор", "Мусорим"])
-putity_set = set(["Ч", "Чистим", "Чищу"])
-pokupka_set = set(["П", "Покупка", "Покупаю", "Приобретаю"])
-level_set = set(["У", "Уровень", "А", "Апгрейд"])
-clean_set = set(["Ф", "Фильтр"])
-lobster_set = set(["Л", "Лобстер", "Лобстера", "Лобстеров", "Лобстеры"])
-yaxt_set = set(["Я", "Яхта", "Яхту"])
-park_set = set(["П", "Парк"])
-robot_set = set(["Р", "Робот", "Робота"])
-attak_set = set(["А", "Атака", "Атакую", "Атакуем"])
-diversion_set = set(["Д", "Диверсия"])
-sponsor_set = set(["С", "Спонсирую", "Спонсорство"])
-green_set = set(["Г", "Гринпис", "Голосую"])
-pokupka_unite = set.union(yaxt_set, park_set, lobster_set, robot_set)
-words_unite = set.union(yaxt_set, park_set)
-
 slovarni_zapas_oneword = {'Спасибо': 'Всегда пожалуйста, уважаемый',
         'сцук': 'Да уж, тяжела твоя доля',
         'Ход': 'Какой?',
@@ -100,6 +83,19 @@ def get_words(S):
         i += 1
     return words
 
+def k(x):
+    if x > 80:
+        return 2
+    elif x > 60:
+        return 1.5
+    elif x > 40:
+        return 1
+    elif x > 20:
+        return 0.5
+    elif x > 0:
+        return 1/3
+    else:
+        return -100
 
 def p_reg_list (id, reg_list):
     if len(reg_list) == 1:
@@ -213,7 +209,7 @@ def sKM(x): #строчку в числительно
 
 def daiy_s(day, id):
     s = get_obj(id+'-s'+str(day))
-    st = "Ваше состояние за день " + str(day)
+    st = "Cостояние за день " + str(day)
     st += "\nВ кармане "+str(s['money'])+" ед\nНа складе "+str(s['musor'])+" едениц отходов\nУровень производства "+str(s['level'])+"\n"
     if s['clean_level']:
         st += "Уровень фильтра "+str(s['clean_level']) + "/10\n"
