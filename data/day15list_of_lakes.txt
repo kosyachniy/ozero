@@ -1,0 +1,1 @@
+[0, {"name": "\u041e\u0437\u0435\u0440\u043e1", "purity": 88, "k": 2, "yaxt": [], "park": [], "robot": [""]}, {"name": "\u041e\u0437\u0435\u0440\u043e2", "purity": 88, "k": 2, "yaxt": [], "park": [], "robot": [""]}]

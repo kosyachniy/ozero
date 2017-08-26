@@ -5,8 +5,8 @@ def red_hod_to_state(id, h, s, reg_list, dict_of_dilogs, list_of_lakes, list_of_
     L = dict_of_dilogs[id]['lake']
     money_plus = 30*list_of_lakes[L]['k']*s['level']
     money_minus = (s['musor']-h['musor'])*10
-    h['inf'] = "Производство продукции принесёт вам " + str(money_plus) + " ед\n"
-    h['inf'] += "Утилизация мусора заберёт " + str(money_minus) + " ед\n"
+    h['inf'] = "Производство продукции принесёт вам " + str(money_plus) + " ₽\n"
+    h['inf'] += "Утилизация мусора заберёт " + str(money_minus) + " ₽\n"
     if h['level']:
         money_minus += 90 + 30*s['level']
     if h['lobster']:
@@ -14,7 +14,11 @@ def red_hod_to_state(id, h, s, reg_list, dict_of_dilogs, list_of_lakes, list_of_
     if h['clean_level']:
         money_minus += 120
     if h['purity']:
-        money_minus += 30
+        if s['purity'] == 10:
+            h['purity'] = 0
+            h['inf'] += 'Покупка фильтров отменена: у вас уже 10 фильтров из 10ти.\n'
+        else:
+            money_minus += 30
     if h['yaxt']:
         money_minus += 180
     if h['park']:
@@ -24,12 +28,13 @@ def red_hod_to_state(id, h, s, reg_list, dict_of_dilogs, list_of_lakes, list_of_
             h['inf'] += "У вас уже есть робот "+str(s['robot'][0])+", и работает он исправно. Чтобы увеличивать броню не нужно покупать нового робота\n"
             h['robot'] = ['', 0]
         else:
-            if h['robot'][0] in list_of_robots:
+            lister = map(lambda x: x[0], list_of_robots[1:])
+            if h['robot'][0] in lister:
+                h['inf'] += 'Покупка робота отменена: робот с именем "'+h['robot'][0]+'" уже есть.\n'
                 h['robot'] = ['', 0]
-                h['inf'] += 'Покупка робота отменена: робот с именем "'+h['robot']+'" уже есть.\n'
             else:
                 money_minus += 180 + h['robot'][1]
-                h['inf'] += "Покупаете робота-чистильщика "+h['robot'][0]+" за 180 ед\nУстанавливаем броню на "+str(h['robot'][1])+'\n'
+                h['inf'] += "Покупаете робота-чистильщика "+h['robot'][0]+" за 180₽\nУстанавливаем броню на "+str(h['robot'][1])+'\n'
     elif h['robot'][1]:
         if s['robot'][0]:
             money_minus += h['robot'][1]
@@ -39,40 +44,36 @@ def red_hod_to_state(id, h, s, reg_list, dict_of_dilogs, list_of_lakes, list_of_
 
     dn = h['diversion_name']
     if dn:
-        dn -= 1
         if h['diversion_money']:
             if dn < len(list_of_robots):
-                h['inf'] += 'Диверсия на робота №'+str(dn+1)+' "'+list_of_robots[dn][0]+'" за '+str(h['diversion_money'])+' ед\n'
+                h['inf'] += 'Диверсия на робота №'+str(dn)+' "'+list_of_robots[dn][0]+'" за '+str(h['diversion_money'])+'  ₽\n'
             else:
                 h['inf'] += "Диверсия не принята. Робота с таким номером нет\n"
         else:
             h['inf'] += "Диверсия не принята. Для успешной диверсии нужно написать:\n Ход номер_робота затрачиваемые_деньги\n"
-        print(h['diversion_name'], h['diversion_money'])
 
-    h['inf'] += "Предпологаемая прибыль: " + str(money_plus-money_minus) + " ед\n"
+    h['inf'] += "Предпологаемая прибыль: " + str(money_plus-money_minus) + " ₽\n"
     if s['money'] < money_minus:
         mess(id, "Внимание! Attention! Aufmerksamkeit!\n"
-        + str(money_minus) +' > '+ str(s['money']) + "\nЕсли не измените ход, то уёдёте в минус по деньгам и потеряете уровень!!!")
+        + str(money_minus) +' > '+ str(s['money']) + "\nЕсли не измените ход, то уйдёте в минус по деньгам и потеряете уровень!!!")
+
+
+    if h['green']:
+        if (type(h['green']) == 'str') and stringh['green'].isdigit() or type(h['green'] == 'int'):
+            if int(h['green']) > len(reg_list[L]) - 1:
+                h['green'] = 0
+                h['inf'] += '\n!!!Голосование некорректно. Просмторите\n"Список игроков на озере"\n'
+                h['inf'] += 'и пришлите номер того, против кого вы отдаёте свой голос. Можете потичать "Подробнее Гринпис"'
+                h['inf'] += '\nПримеры: Ход Голосую 2\nХод Г %Петя Иванов%\n'
+            else:
+                h['green'] = int(h['green'])
+                id_green = reg_list[L][h['green']]
+                h['inf'] += 'Голос против ('+str(h['green'])+')'+dict_of_dilogs[id_green]['first_name']+' '+dict_of_dilogs[id_green]['last_name']
+    print("red:", h['green'])
     return h
 
 
-musor_set = set(["М", "Мусорю", "Мусор", "Мусорим"])
-purity_set = set(["Ч", "Чистим", "Чищу"])
-pokupka_set = set(["П", "Покупка", "Покупаю", "Приобретаю"])
 
-level_set = set(["У", "Уровень", "А", "Апгрейд"])
-clean_set = set(["Ф", "Фильтр"])
-lobster_set = set(["Л", "Лобстер", "Лобстера", "Лобстеров", "Лобстеры"])
-yaxt_set = set(["Я", "Яхта", "Яхту"])
-park_set = set(["П", "Парк"])
-robot_set = set(["Р", "Робот", "Робота"])
-
-attak_set = set(["А", "Атака", "Атакую", "Атакуем"])
-diversion_set = set(["Д", "Диверсия"])
-sponsor_set = set(["С", "Спонсирую", "Спонсорство"])
-green_set = set(["Г", "Гринпис", "Голосую"])
-pokupka_unite = set.union(yaxt_set, park_set, lobster_set, robot_set)
-words_unite = set.union(yaxt_set, park_set)
 
 
 def one(i, words, set):
@@ -88,17 +89,17 @@ def tchk(s):
         return s[0] + '.' + s[1:]
     return s
 
-def anser_for_hod(day, id, h, s):
+def answer_for_hod(day, id, h, s):
     st = "Принят ход за день " + str(day) + ":\n"
     st += "Мусорим на " + str(h['musor']) + ' из '+str(s['musor'])+'\n'
     if h['purity']:
-        st += "Чистим своими силами за 30 ед\n"
+        st += "Чистим своими силами за 30₽\n"
     if h['level']:
-        st += "Улучшаем производство на заводе за 120 ед\n"
+        st += "Улучшаем производство на заводе за 120₽\n"
     if h['clean_level']:
-        st += "Покупаем фильтры за 120 ед\n"
+        st += "Покупаем фильтры за 120₽\n"
     if h['lobster']:
-        st += "На ужин сегодня роскошные лобстеры за 60 ед\n"
+        st += "На ужин сегодня роскошные лобстеры за 60₽\n"
     if h['yaxt']:
         st += "Ваша новая яхта будет называться " + h['yaxt']+'\n'
     if h['park']:
@@ -106,7 +107,7 @@ def anser_for_hod(day, id, h, s):
     mess(id, st)
     mess(id, h['inf'])
 
-def make_hod_file(id, words): #создаёт файл "hod-
+def make_hod_file(id, words, dict_of_dilogs, reg_list): #создаёт файл "hod-
     h = hod()
     i = 0
     ch = '' #счётчик
@@ -168,17 +169,24 @@ def make_hod_file(id, words): #создаёт файл "hod-
             elif ch == 'g':
                 if s.isdigit():
                     h['green'] = int(s)
+                else:
+                    lister = s.split()
+                    if len(lister) == 2:
+                        L = dict_of_dilogs[id]['lake']
+                        for I in reg_list[L][1:]:
+                            if dict_of_dilogs[I]['lake'] == L and dict_of_dilogs[I]['first_name'] in lister and dict_of_dilogs[I]['last_name'] in lister:
+                                h['green'] = dict_of_dilogs[I]['nom']
+                                break
+                        if not(type(h['green']) == 'int'):
+                            h['hod'] = 100
                 ch = ''
             elif ch == 'd0':
-                print('d0')
                 if s.isdigit():
                     h['diversion_name'] = int(s)
-                    print(':=d1')
                     ch = 'd1'
                 else:
                     ch = ''
             elif ch == 'd1':
-                print('d1')
                 if s.isdigit():
                     h['diversion_money'] = int(s)
                 ch = ''
@@ -193,6 +201,7 @@ def make_hod_file(id, words): #создаёт файл "hod-
                     h['sponsor_money'] = int(s)
                 ch = ''
         i += 1
+    print("make_hod_file:", h['green'])
     return h
 
 def state():
@@ -238,24 +247,28 @@ def do_game(game, dict, reg_list, list_of_lakes, list_of_robots, dict_of_dilogs)
     set_id_for_diversion = set()
     for id in mnog: #i == id
         L = dict_of_dilogs[id]['lake'] #номер озера
+
         h = game[id]['h']
         s = game[id]['s']
         h['inf'] = ''
-        vuruchka = 30*list_of_lakes[L]['k']*s['level'] #(+)ежедневная прибыль
+
+        vuruchka = 30*list_of_lakes[L]['k']*s['level'] #ежедневная прибыль
         if h['clean_level']:
             s['clean_level'] += 1 #(!) не больше 10того уровня
             s['money_minus'] += 120
-            h['inf'] += 'Установили новые фильтры за 120 ед. \n'
+            h['inf'] += 'Установили новые фильтры за 120₽. \n'
         util_prise = (s['musor'] - h['musor'])*10 #(+)тратим деньги на утилизацию
         s['money_plus'] += vuruchka
+        s['money_plus'] += 30*len(s['park'])# парки приносят прибыль
         s['money_minus'] += util_prise
         list_of_lakes[L]['purity'] -= h['musor'] #(+)у озера уходят намусоренные проценты
-        s['musor'] = s['level']*(1 - 0.1*s['clean_level']) #(не хватает фильтрв) появляются новые еденицы мусора
-
+        s['musor'] = s['level']*(1 - 0.1*s['clean_level']) #появляются новые еденицы мусора
+        if s['robot'][0]:
+            list_of_lakes[L]['purity'] += 2
         if h['lobster']:
             s['money_minus'] += 60
             s['lobster'] += 1
-            h['inf'] += 'Купили лобстеров за 60 ед\n'
+            h['inf'] += 'Купили лобстеров за 60  ₽\n'
         if h['yaxt']:
             s['money_minus'] += 180
             h['inf'] += '"'+h['yaxt'] + '" завтра выйдет в озеро\n'
@@ -268,16 +281,15 @@ def do_game(game, dict, reg_list, list_of_lakes, list_of_robots, dict_of_dilogs)
             list_of_lakes[L]['park'].append(h['park'])
         if h['level']:
             s['money_minus'] += 120
-            h['inf'] += 'Купили новый уровень за 120 ед\n'
+            h['inf'] += 'Купили новый уровень за 120  ₽\n'
             s['level'] += 1  # покупаем уровень
         h['inf'] += 'Выручка фабрики: ' + str(vuruchka) + '\n'
         h['inf'] += 'На утилизацию вы потратили ' + str(util_prise) + '\n'
 
         if h['purity']:
             list_of_lakes[L]['purity'] += 1
-            h['inf'] += 'Почистили совими силами за 30 ед\n'
+            h['inf'] += 'Почистили совими силами за 30  ₽\n'
             s['money_minus'] += 30
-
         if h['robot'][0]:
             s['money_minus'] += 180 + h['robot'][1]
             s['robot'] = h['robot']
@@ -288,7 +300,7 @@ def do_game(game, dict, reg_list, list_of_lakes, list_of_robots, dict_of_dilogs)
             s['money_minus'] += h['robot'][1]
             s['robot'][1] += h['robot'][1]
             list_of_lakes[L]['robot'][index][1] += h['robot'][1]
-            h['inf'] += 'Повышаем защиту вашего робота '+s['robot'][0]+' на '+str(h['robot'][1])+' ед. Теперь его броня ' + str(s['robot'][1])+'\n'
+            h['inf'] += 'Повышаем защиту вашего робота '+s['robot'][0]+' на '+str(h['robot'][1])+'  ₽. Теперь его броня ' + str(s['robot'][1])+'\n'
 
         if h['diversion_name']:
             s['money_minus'] += h['diversion_money']
@@ -301,14 +313,20 @@ def do_game(game, dict, reg_list, list_of_lakes, list_of_robots, dict_of_dilogs)
     for id in set_id_for_diversion:
         жертва = list_of_robots[game[id]['h']['diversion_name']][2]
         затраты = game[id]['h']['diversion_money']
-        print(game[жертва])
-        if game[жертва]['s']['robot'][1] >= затраты:
-            game[id]['h']['inf'] += 'Диверсия провалена: защита робота оказалась больше\n'
-            game[жерва]['h']['inf'] += 'На вашего робота была совершена неудачная диверсия\n'
+        if game[жертва]['s_new']['robot'][0]:
+            if game[жертва]['s_new']['robot'][1] >= затраты:
+                game[id]['h']['inf'] += 'Диверсия провалена: защита робота оказалась больше\n'
+                game[жертва]['h']['inf'] += 'На вашего робота была совершена неудачная диверсия\n'
+            else:
+                game[id]['h']['inf'] += 'Диверсия прошла успешно. '+str(game[жертва]['s_new']['robot'][1])+' едениц брони не защитили робота '+str(game[жертва]['s_new']['robot'][0])+' от вашго нападения.\n'
+                game[жертва]['h']['inf'] += 'Ваш робот уничтожен диверсией за ' + str(затраты) +' ₽. Соболезнуем:-(\n'
+                game[жертва]['s_new']['robot'][0] = ['', 0]
         else:
-             game[жертва]['h']['inf'] += 'Ваш робот уничтожен диверсией за ' + str(затраты) +' ед \n'
-             game[жертва]['s_new']['s']['robot'] = ['', 0]
-    for i in set: #i == id
+            game[id]['h']['inf'] += 'Кто-то сегодня уже провернул успешную диверсию на этого робота. У него было '+str(game[жертва]['s_new']['robot'][1])+' едениц брони\n'
+        game[жертва]['s_new']['robot'][1] = 0
+
+
+    for i in mnog: #i == id
         put_obj(game[i]['s'], i+'-s'+str(reg_list[0]))
         put_obj(game[i]['h'], i+'-h'+str(reg_list[0]))
         game[i]['s_new']['money'] -= game[i]['s_new']['money_minus']
@@ -325,7 +343,6 @@ def do_game(game, dict, reg_list, list_of_lakes, list_of_robots, dict_of_dilogs)
     return game
 
 
-
 def lake(st, id):
     return {
         'name': st,
@@ -335,9 +352,14 @@ def lake(st, id):
         'park': [],
         'robot': []}
 
-def make_list_of_robots(list_of_lakes):
-    list = []
-    for i in range(1,len(list_of_lakes)):
-        for j in range(len(list_of_lakes[i]['robot'])):
-            list.append(list_of_lakes[i]['robot'][j])
-    return list
+def make_list_of_robots(dict_of_dilogs, game_dict, have_robot_list, list_of_lakes, reg_list):
+    list_of_robots = ['',]
+    for i in range(1, len(list_of_lakes)):
+        list_of_lakes[i]['robot'] = ['',]
+    for id in have_robot_list:
+        L = dict_of_dilogs[id]['lake']
+        robot = game_dict[id]['s']['robot']
+        elem = [robot[0], robot[1], id]
+        list_of_robots.append(elem)
+        list_of_lakes[L]['robot'].append(elem)
+    return list_of_robots, list_of_lakes

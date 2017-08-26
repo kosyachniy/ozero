@@ -1,7 +1,8 @@
-mnog = {1, 2, 3, 4}
-print(type(mnog))
-mnog = set()
-print(type(mnog))
+def inch(x):
+    return x[0]
 
-for i in mnog:
+list = [(1,0), (2,0), (3,0)]
+L = map(inch, list)
+print(L)
+for i in map(lambda x: x[0], list):
     print(i)

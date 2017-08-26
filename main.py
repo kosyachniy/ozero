@@ -1,25 +1,49 @@
 from lake import *
 import os
+
 list_of_lakes = get_obj('list_of_lakes')
-list_of_robots = make_list_of_robots(list_of_lakes)
 dict_of_dilogs = get_obj('dict_of_dilogs')
 reg_list = get_obj('reg_list')
+list_of_robots = ['',]
+game_dict, have_robot_list = make_game_dict(dict_of_dilogs, reg_list)
+list_of_robots, list_of_lakes = make_list_of_robots(dict_of_dilogs, game_dict, have_robot_list, list_of_lakes, reg_list)
 words = []
 
-def proverka(st):
+def proverka(st, remove = 1):
+    global words
     list = st.split()
     if len(list) > len(words):
         return 0
     for i in range(len(list)):
-        if not (list[i] == words[i]):
-            return 0
+        if not(list[i] == words[i]):
+            return st
+    if remove:
+        words = words[len(list):]
     return 1
+
+def dil(id, dict, main_st):
+    global words
+    if not(proverka(main_st)):
+        return 0
+    keys = dict.keys()
+    if words:
+        st = ""
+        for string in keys:
+            st += '"'+main_st + ' ' + string + '"\n'
+        mess(id, st)
+        return 1
+    for string in keys:
+        if proverka(string):
+            dict[string](id) #?wtf?
+            return 1
+    return 0
 
 def put(st):
     set0 = set(st)
     if 'r' in set0:
         put_obj(reg_list, 'reg_list')
     if 'l' in set0:
+        put_obj(list_of_lakes, 'day'+str(reg_list[0])+'list_of_lakes')
         put_obj(list_of_lakes, 'list_of_lakes')
     if 'd' in set0:
         put_obj(dict_of_dilogs, 'dict_of_dilogs')
@@ -30,7 +54,7 @@ def p_gamers_on_lake(id, lake):
     else:
         for j in range(1, len(lake)):
             mess(id, '('+str(j)+')'+ get_name(lake[j]))
-        mess(id, "Конец списка")
+        mess(id, "Конец списка, "+dict_of_dilogs[id]['obr'])
 
 def chek_list_of_dilogs():
     if not(id in dict_of_dilogs):  # если с этим человеком мы ещё не разговривали, добавляем его в словарь
@@ -40,14 +64,14 @@ def chek_list_of_dilogs():
         if int(id) == 144520879 or int(id) == 140420515:
             dict_of_dilogs[id]['admin'] = 1
         put_obj(dict_of_dilogs, 'dict_of_dilogs')
-        for i in range(1, 20):
+        for i in range(1, 31):
             put_obj(state(), id+'-s'+str(i))
             put_obj(hod(), id+'-h'+str(i))
     elif (dict_of_dilogs[id]['date'] >= item['date']):  # отвечаем только на последние сообщения данного пользователя
         return 1
     else:
         dict_of_dilogs[id]['date'] = item['date']
-        put_obj(dict_of_dilogs, 'dict_of_dilogs')
+        put('d')
     return 0
 
 def get_name(id):
@@ -57,10 +81,10 @@ values = {'out': 0, 'count': 10, 'time_offset': 3600}
 
 def answer_to_admin():
     global list_of_lakes, dict_of_dilogs, reg_list, words
-    if proverka("Помощь"):
+    if proverka("Помощь", remove=0):
         mess(id, "В помощь админу:\nОбнулить\nДай словарь\nДай список\nДай регистрацию\nУстановить день\nСделать ход\n")
     if proverka("Обнулить"):
-        reg_list = [8, ]
+        reg_list = [1, ]
         dict_of_dilogs = {}
         list_of_lakes = [0, ]
         put('rld')
@@ -68,32 +92,27 @@ def answer_to_admin():
     if proverka("Дай Словарь"):
         mess(id, str(dict_of_dilogs))
         return 1
-    if proverka("Дай Список"):
-        mess(id, str(list_of_lakes))
-        return 1
     if proverka("Дай Регистрацию"):
         mess(id, str(reg_list))
         return 1
-    if proverka("Установить День") and words[2].isdigit():
-        reg_list[0] = int(words[2])
+    if proverka("Дай Список"):
+        mess(id, str(list_of_lakes))
+        return 1
+    if proverka("Установить День") and words and int(words[0]):
+        put_obj(list_of_lakes, "day"+str(reg_list[0]))
+        reg_list[0] = int(words[0])
         put_obj(reg_list, 'reg_list')
-        mess(id, "Установлен день " + words[2])
+        mess(id, "Установлен день " + words[0])
         return 1
     if proverka("Сделать Ход"):
         global list_of_robots
-        game_dict = {}
-        for i in range(1, len(reg_list)):
-            for j in range(1, len(reg_list[i])):
-                g_id = reg_list[i][j]
-                #mess(id, "Закидываем игрока " + str(i) + str(j))
-                if dict_of_dilogs[g_id]['lake'] != i or dict_of_dilogs[g_id]['nom'] != j: #на всякий случай. Защита от неправильной проги
-                    mess(id, "Информация об игроке " + g_id + " некорректная")
-                game_dict[g_id] = {}
-                game_dict[g_id]['s'] = get_obj(g_id + '-s' + str(reg_list[0]))
-                game_dict[g_id]['h'] = get_obj(g_id + '-h' + str(reg_list[0]))
+        put_obj(list_of_lakes, "day"+str(reg_list[0]))
+        game_dict, have_robot_list = make_game_dict(dict_of_dilogs, reg_list)
+        list_of_robots, list_of_lakes = make_list_of_robots(dict_of_dilogs, game_dict, have_robot_list, list_of_lakes, reg_list)#роботы до диверсий
         do_game(game_dict, dict_of_dilogs, reg_list, list_of_lakes, list_of_robots, dict_of_dilogs)
-        list_of_robots = make_list_of_robots(list_of_lakes)
-        reg_list[0] += 1
+        game_dict, have_robot_list = make_game_dict(dict_of_dilogs, reg_list)
+        list_of_robots, list_of_lakes = make_list_of_robots(dict_of_dilogs, game_dict, have_robot_list, list_of_lakes, reg_list)#роботы после диверсий
+        reg_list[0] += 1 #следующий день
         for i in range(1, len(list_of_lakes)):
             list_of_lakes[i]['k'] = k(list_of_lakes[i]['purity'])
         put('rl')
@@ -101,48 +120,60 @@ def answer_to_admin():
     return 0
 
 def answer_to_gamer():
-    global dict_of_dilogs
+    global dict_of_dilogs, list_of_lakes, list_of_robots
     if proverka("Ход"):
-        words.remove(words[0])
         day = reg_list[0]
-        if words[0].isdigit():
+        if len(words) > 0 and int(words[0]):
             day = max(day, int(words[0]))
             words.remove(words[0])
-        h = make_hod_file(id, words) #+
-        list_of_robots = make_list_of_robots(list_of_lakes) #+
+        h = make_hod_file(id, words, dict_of_dilogs, reg_list) #+
         s = get_obj(id+'-s'+str(reg_list[0]))
         h = red_hod_to_state(id, h, s, reg_list, dict_of_dilogs, list_of_lakes, list_of_robots) #have not diversion
-        anser_for_hod(day, id, h, s)
+        answer_for_hod(day, id, h, s)
         put_obj(h, id+'-h'+str(reg_list[0]))
         return 1
 
-    if proverka("Помощь"):
+    if proverka("Помощь", remove=0):
         mess(id, 'В помощь игроку:\n"Дай"\n"Выйти Из Моего Озера"\n"Список"\n"Как сделать ход"\n')
-
+    if proverka("Как Сделать Ход"):
+        mess(id, как_сделать_ход)
+        return 1
     if proverka("Sv_Cheats 1") and not(dict_of_dilogs[id]['cheat']): #len(words) > 1 and words[0] == "Sv_Cheats" and words[1] == '1':
         dict_of_dilogs[id]['cheat'] = '1'
         mess(id, "Читы включены")
         return 1
-    if dict_of_dilogs[id]['cheat'] and proverka("Impuls 101"):
-        string = id+'-s'+str(reg_list[0])
-        s = get_obj(string)
-        s['money'] += 1010
-        put_obj(s, string)
+
+    if dil(id, словарь_подробнее, "Подробнее"):
         return 1
-    if words[0] == "Дай":
-        if len(words) == 1:
-            mess(id, 'Напишите\n "Дай ход" или "Дай состояние", чтобы узнать свой ход или состояние за текущий день.\n"Дай ход 4" чтобы узнать ход за день 4\n"Дай состояние -1" чтобы узнать состояние за вчерашний день')
+
+    if dict_of_dilogs[id]['cheat']:
+        if proverka("Impuls 101"):
+            string = id+'-s'+str(reg_list[0])
+            s = get_obj(string)
+            s['money'] += 1010
+            s['level'] += 2
+            put_obj(s, string)
             return 1
-        if words[1] == 'Озеро':
+
+    if proverka("Дай"):
+        if proverka("Озеро"):
             L = dict_of_dilogs[id]['lake']
-            mess(id, str(list_of_lakes[L]))
-            return 1
-        if words[1] == "Состояние":
-            if len(words) > 2:
-                if len(words[2]) > 1 and (words[2][0] == '-' or words[2][0] == '+') and words[2][1:].isdigit():
-                    day = str(reg_list[0] + int(words[2]))
-                elif words[2].isdigit():
-                    day = words[2]
+            day = reg_list[0]
+            proverka("№")
+            if words:
+                L = int_lake(id, words[0], reg_list)
+            if not(L):
+                return 1
+            words.pop(0)
+            if proverka("День") and words and int(words[0]) and int(words[0]) <= day:
+                day = int(words[0])
+            p_lake_day(id, list_of_lakes[L], day)
+        if proverka("Состояние"):
+            if words:
+                if len(words[0]) > 1 and (words[0][0] == '-' or words[0][0] == '+') and words[0][1:].isdigit():
+                    day = str(reg_list[0] + int(words[0]))
+                elif words[0].isdigit():
+                    day = words[0]
                 else:
                     day = str(10000)
             else:
@@ -154,12 +185,12 @@ def answer_to_gamer():
             else:
                 mess(id, "Файл не найден")
             return 1
-        if words[1] == "Ход":
-            if len(words) > 2:
-                if len(words[2]) > 1 and (words[2][0] == '-' or words[2][0] == '+') and words[2][1:].isdigit():
-                    day = str(reg_list[0] + int(words[2]))
-                elif words[2].isdigit():
-                    day = words[2]
+        if proverka("Ход"):
+            if words:
+                if len(words[0]) > 1 and (words[0][0] == '-' or words[0][0] == '+') and words[0][1:].isdigit():
+                    day = str(reg_list[0] + int(words[0]))
+                elif words[0].isdigit():
+                    day = words[0]
                 else:
                     day = 10000
             else:
@@ -170,15 +201,16 @@ def answer_to_gamer():
             else:
                 mess(id, "Файл не найден")
             return 1
+        ster = 'Напишите\n "Дай ход", "Дай состояние" или "Дай озеро №[номер озера]", чтобы узнать свой ход или состояние за текущий день.\n"'
+        ster += 'Дай ход 4" чтобы узнать ход за день 4\n"Дай состояние -1" чтобы узнать состояние за вчерашний день'
+        mess(id, )
     return 0
 
 def answer():
-    while len(words) > 0 and (words[0] in privetstvie or words[0] in Obrashenie):
+    while words and words[0] in privetstvie:
         if words[0] in privetstvie:
             mess(id, "И тебе привет, " + dict_of_dilogs[id]['obr'] + ' :-)')
-            words.remove(words[0])
-    if len(words) == 0:
-        return 1
+            words.pop(0)
     if dict_of_dilogs[id]['admin']:
         if answer_to_admin():
             return 1
@@ -187,7 +219,7 @@ def answer():
             return 1
     return 0
 
-
+mess(str(144520879), str(dict_of_dilogs))
 #dict_of_dilogs['144520879']['date'] -= 1  # !!""""
 
 
@@ -206,9 +238,11 @@ for i in range(2000):
 
         words = get_words(item['body'])
         print("Words:= ", words)
+
+        #words = red_words(id, reg_list, dict_of_dilogs[id], words)
+        #print("Words:= ", words)
         if len(words) > 0 and answer():
             continue
-
 
 
         if len(words) == 1 and words[0] in slovarni_zapas_oneword:
@@ -216,30 +250,14 @@ for i in range(2000):
             continue
 
 
-        if len(words) > 2 and proverka("Дай Озеро") and words[2].isdigit():
-            if len(list_of_lakes) > words[2]:
-                mess(id, str(list_of_lakes[int(words[2])]))
-            else:
-                mess(id, "Озёр меньше, чем вы назвали")
-            continue
-
-        if proverka("Дай Роботов"):
-            list_of_robots = make_list_of_robots(list_of_lakes)
-            mess(id, str(list_of_robots))
-            continue
-
         if proverka("Какой Сейчас День"):
             mess(id, "Сегодня " + sPM(reg_list[0])+" день")
             continue
 
-        if proverka("Как Сделать Ход"):
-            mess(id, "Раздел в разработке, уточните у Ивана")
-            continue
-
-        if len(words) > 2 and proverka("Называй Меня"):
-            dict_of_dilogs[id]['obr'] = words[2]
+        if proverka("Называй Меня") and words:
+            dict_of_dilogs[id]['obr'] = words[0]
             put("d")
-            mess(id, 'Хорошо, товарищ ' + words[2])
+            mess(id, 'Хорошо, товарищ ' + words[0])
             continue
 
         if proverka("Зарегистрировать Новое Озеро"):
@@ -259,29 +277,34 @@ for i in range(2000):
                          'Сейчас на нём только один игрок: {}(Вы)'.format(x, "Озеро" + str(x), get_name(id)))
             continue
 
+        if proverka("Список"):
+            if not(words):
+                mess(id, 'Возможные вариванты: "Список озёр"\n"Список роботов"\n"Список игрков на озере %название озера%"\n')
+            if proverka("Озер"):
+                pr_list(id, map(lambda x: x[0], reg_list[1:]))
+                continue
+            if proverka("Игроков На Озере"):
+                if int_lake(id, words, reg_list):
+                    p_gamers_on_lake(id, int_lake(words[0]))
+                else:
+                    mess(id, "Озера с таким названием нет")
+                continue
+            if proverka("Роботов"):
+                list_of_robots = ['',]
+                game_dict, have_robot_list = make_game_dict(dict_of_dilogs, reg_list)
+                list_of_robots, list_of_lakes = make_list_of_robots(dict_of_dilogs, game_dict, have_robot_list, list_of_lakes, reg_list)
+                pr_list(id, map(lambda x: x[0], list_of_robots[1:]))
+                continue
 
-        if proverka("Список Озер"):
-            p_reg_list(id, reg_list)
-            continue
-
-        if len(words) > 4 and proverka("Список Игроков На Озере"):
-            for i in range(1, len(reg_list)):
-                if words[4] == reg_list[i][0]:
-                    p_gamers_on_lake(id, reg_list[i])
-                    break
-            if words[4] != reg_list[i][0]:
-                mess(id, "Озера с таким названием нет")
-            continue
-
-        if len(words) > 3 and proverka("Захожу В Озеро"):
+        if proverka("Захожу В Озеро"):
             if dict_of_dilogs[id]['status'] == "Gamer":
                 mess(id, 'Вы уже зарегистрированы в озеро под названием {}.\n'
                          'Чтобы войти в другое озеро, сначала выйдите из этого\n'.format(reg_list[dict_of_dilogs[id]['lake']][0]))
             else:
                 for i in range(1,len(reg_list)):
-                    if reg_list[i][0] == words[3]:
+                    if reg_list[i][0] == words[0]:
                         break
-                if reg_list[i][0] != words[3]:
+                if reg_list[i][0] != words[0]:
                     mess(id, "Озера с таким названием нет. Выберете озеро из списка озёр или создавайте своё.")
                     p_reg_list(id, reg_list)
                 else:
@@ -315,7 +338,7 @@ for i in range(2000):
                 put("rdl")
             continue
 
-        if len(words) > 0:  # !!
+        if not(words):  # !!
             mess(id, 'непонятка:(')
             if not(dict_of_dilogs[id]['admin']):
                 time.sleep(2)

@@ -1,39 +1,33 @@
-from lake import *
 
-def chek_list_of_dilogs():
-    if not (str(id) in dict_of_dilogs):  # если с этим человеком мы ещё не разговривали, добавляем его в словарь
-        print(id)
-        x = Vano.method("users.get", {"user_ids": id})[0]
-        dict_of_dilogs[str(id)] = {"obr": x["first_name"], "date": item['date'], "first_name": x["first_name"],
-                                   "last_name": x["last_name"], "status": 'New'}  # !!
-        if id == 144520879 or id == 140420515:
-            dict_of_dilogs[str(id)]["status"] = 'Admin'
-        print("Добавляем ", dict_of_dilogs[str(id)])
-        put_obj(dict_of_dilogs, 'dict_of_dilogs')
-    elif (dict_of_dilogs[str(id)]['date'] >= item['date']):  # отвечаем только на последние сообщения данного пользователя
-        return 1
-    else:
-        dict_of_dilogs[str(id)]['date'] = item['date']
-        put_obj(dict_of_dilogs, 'dict_of_dilogs')
+
+def proverka(st):
+    list = st.split()
+    if len(list) > len(words):
+        return 0
+    for i in range(len(list)):
+        if not (list[i] == words[i]):
+            return 0
+    return 1
+
+def dil(id, dict, main_st, words):
+    print('in dill')
+    print(proverka(main_st))
+    if not(proverka(main_st)):
+        print(words)
+        print(main_st)
+        print('not')
+        return 0
+    words.remove(words[0])
+    keys = game.keys()
+    print('go')
+    if not(len(words)):
+        st = ""
+        for string in keys:
+            st += main_st + ' ' + string + '\n'
+            mess(id, st)
+            return 1
+    for string in keys:
+        if proverka(string):
+            dict[string](id)
+            return 1
     return 0
-
-values = {'out': 0, 'count': 10, 'time_offset': 20}
-
-dict_of_dilogs = get_obj('dict_of_dilogs')
-
-
-dict_of_dilogs['144520879']['date'] -= 1  # !!
-
-
-
-while True:
-    res = Vano.method('messages.get', values)
-    #print(res)
-    for item in res['items']:
-        id = item['user_id']
-        print(item)
-        if id > 0 and chek_list_of_dilogs():
-            continue
-        if id == 58115079:
-            Vano.method("messages.send", {'user_id':id, 'sticker_id': 48})
-    time.sleep(1)
