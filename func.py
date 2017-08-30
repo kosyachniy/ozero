@@ -10,7 +10,9 @@ def get_obj(s):
 
 INT = int
 def integer(st):
-    if type(st) == 'list':
+    if not(st):
+        return 0
+    if type(st) == list_type:
         if st:
             st = st[0]
         else:
@@ -94,7 +96,7 @@ def make_game_dict(dict_of_dilogs, reg_list):
             g_id = reg_list[i][j]
             #mess(id, "Закидываем игрока " + str(i) + str(j))
             if dict_of_dilogs[g_id]['lake'] != i or dict_of_dilogs[g_id]['nom'] != j: #на всякий случай. Защита от неправильной проги
-                mess(id, "Информация об игроке " + g_id + " некорректная")
+                mess(144520879, "Информация об игроке " + g_id + " некорректная")
             game_dict[g_id] = {}
             game_dict[g_id]['s'] = get_obj(g_id + '-s' + str(reg_list[0]))
             game_dict[g_id]['h'] = get_obj(g_id + '-h' + str(reg_list[0]))
@@ -113,6 +115,43 @@ def lake_registation(id, reg_list):
         reg_list[i] = ["Озеро" + str(i), id]
     return i, reg_list
 
+def get_id(st):
+    if st.isdigit():
+        return st
+    x = Vano.method('utils.resolveScreenName', {'screen_name': st})
+    if x['type'] == 'user':
+        return x['object_id']
+    return ''
+
+
+def Приглашаю(id, words, dict_of_dilogs):
+    get_name = lambda id: dict_of_dilogs[id]['first_name'] + ' ' + dict_of_dilogs[id]['last_name']
+    dilogs_keys = dict_of_dilogs.keys()
+    for i in range(len(words)):
+        st = words[i]
+        if st[:15] == 'https://vk.com/':
+            st = st[15:]
+        elif st[:7] == 'vk.com/':
+            st = st[7:]
+        chel_id = get_id(st)
+        if chel_id:
+            if chel_id in dilogs_keys:
+                x = dict_of_dilogs[chel_id]
+                if x['status'] == 'Gamer':
+                    mess(id, "Игрок "+get_name(chel_id)+" уже сам зарегистрировался на озеро №"+int(x['lake']))
+                elif x['status'] == 'Invited':
+                    mess(id, "Игрока "+get_name(chel_id)+" уже кто-то пригласил в озеро №"+int(x['lake']))
+            if is_they_friends(id, chel_id):
+                x = get_user(chel_id)
+                dict_of_dilogs[chel_id] = {"obr": x["first_name"], "date": 0, "first_name": x["first_name"],
+                                       "last_name": x["last_name"], "status": 'invited', "lake": 0, "nom": 0, "admin":0, "cheat": ""}
+                mess(id, "Пользователь "+get_name(chel_id)+" получит приглашение и инструкцию, как вступить в озеро под номером "+str(dict_of_dilogs[id]['lake']))
+            else:
+                chel = get_user(chel_id)
+                mess(id, "Пользователь "+chel['first_name']+' '+chel['last_name']+" не является вашим другом")
+        else:
+            mess(id, "Простите, "+dict_of_dilogs[id]['obr']+', я не смог найти пользователя ВК по ссылке "'+words[i]+'" Возможно, вы не окружили ссылку процентиками\n Пример: "%https://vk.com/id144520879%"')
+    return dict_of_dilogs
 def sPM(x): #строчку в порядковое числительное муржского рода
     st = ''
     if x == 1:
@@ -218,6 +257,20 @@ def daiy_s(day, id):
         st += "Робот " + s['robot'][0] + " с защитой "+sKM(s['robot'][1]) + " работает без перебоев\n"
     mess(id, st)
 
+def p_lake_day(id, lake, day):
+    st = lake['name']+", день "+str(day)+":"#+str(lake)
+    st += "\n Чистота "+str(lake['purity'])+"(k="+str(lake['k'])+")\n"
+    if lake['yaxt'] or lake['robot'][1:] or lake['park']:
+        if lake['yaxt']:
+            st += str(len(lake['yaxt']))+" яхт\n"
+        if lake['robot'][1:]:
+            st += str(len(lake['robot']) - 1)+" роботов\n"#-1 есть!
+        if lake['park']:
+            st += str(len(lake['park']))+" парков\n"
+    else:
+        st += "Нет ни яхт, ни роботов-чистильщиков, ни парков"
+    mess(id, st)
+
 def pr_list(id, list):
     k = 0
     for i in list:
@@ -229,20 +282,23 @@ def pr_list(id, list):
         mess(id, "Пусто")
 
 def int_lake(id, st, reg_list): #Поиск номера озера по номеру или названию
-    if type(st) == 'list': #Если вдруг это список, то обрабатываем первый элемент списка и неадеемся на строчку
+    if type(st) == list_type: #Если вдруг это список, то обрабатываем первый элемент списка и неадеемся на строчку
         if st:
             st = st[0]
         else:
             return 0
+    if type(st) == int_type: #если строчка не номер, пишем сообщение
+        return st
     if st.isdigit(): #если строчка переводится в число,
         st = int(st) #тогда полоучаем число
         if st < len(reg_list):
             return st
         return 0
     for i in range(1, len(reg_list)): #если строчка не переводится в число, проверяем, вдруг это назввание озера
-        if reg_list[i] and st == reg_list[i][0]: #коль нашли такое название, заменяем строчку на номер
+        if st == reg_list[i][0]: #коль нашли такое название, заменяем строчку на номер
             st = i
             break
-    if type(st) == 'int': #если строчка не номер, пишем сообщение
+    if type(st) == int_type:
         return st
-    mess(id, 'Такого озера нет\nСверьтесь с разделом "Список озёр"')
+    else:
+        mess(id, 'Такого озера нет\nСверьтесь с разделом "Список озёр"')

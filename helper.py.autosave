@@ -18,12 +18,6 @@ id = 'bahopotok', 144520879, 'kampov5511'
 #print(Vano.method('users.get', {'user_ids': [144520879, 'kampov5511', 5, "пр"]}))
 
 
-def get_id(st):
-    if st.isdigit():
-        return st
-    x = Vano.method('utils.resolveScreenName', {'screen_name': st})
-    if x['type'] == 'user':
-        return x['object_id']
-    return ''
+
 
 print(get_id('kampov5511'))
